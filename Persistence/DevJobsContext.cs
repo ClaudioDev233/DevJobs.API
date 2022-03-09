@@ -1,13 +1,31 @@
 using DevJobs.API.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace DevJobs.API.Persistence
 {
-    public class DevJobsContext
+    public class DevJobsContext : DbContext
     {
-        public DevJobsContext()
+        public DevJobsContext(DbContextOptions<DevJobsContext> options) : base(options)
         {
-            JobVacancies = new List<JobVacancy>();
+            
         }
-        public List<JobVacancy> JobVacancies {get;set;}
+        public DbSet<JobVacancy> JobVacancies {get;set;}
+        public DbSet<JobApplication> JobApplications { get; set;}
+        
+        // configura classe pra tabelas
+        protected override void OnModelCreating(ModelBuilder builder){
+            builder.Entity<JobVacancy>(e =>{
+                e.HasKey(jobs => jobs.Id);
+                e.ToTable("tb_JobVacancies");
+
+                e.HasMany(jv => jv.Applications)
+                .WithOne()
+                .HasForeignKey(jobApp => jobApp.IdJob)
+                .OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<JobApplication>(e =>{
+                e.HasKey(jobs => jobs.Id);
+            });
+        }
     }
 }
